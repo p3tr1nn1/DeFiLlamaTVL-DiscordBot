@@ -1,8 +1,4 @@
-# DeFi Llama TVL Analysis
-
-![DeFi Llama Logo](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXPMIS5tfUOecqePdv2nLuztb2gNJnTghuk3vw7A0QHMy20WV35HsMM3eaOzp1xxjPy_E&usqp=CAU)
-![ChatGPT Logo](https://cdn-icons-png.flaticon.com/256/12222/12222588.png)
-![Discord Logo](https://p1.hiclipart.com/preview/518/734/503/numix-circle-for-windows-web-discord-icon-png-icon.jpg)
+# DeFi Llama Discord TVL Analysis
 
 This repository contains a collection of Python scripts for analyzing and monitoring the Total Value Locked (TVL) of various decentralized finance (DeFi) chains using the DeFi Llama API. The scripts provide insights into TVL changes over different time periods and can send notifications to a Discord channel.
 
@@ -70,3 +66,6 @@ Now, the scripts will use this webhook URL to send notifications to your Discord
 
 Feel free to customize and expand upon this documentation as needed for your project.
 
+![DeFi Llama Logo](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXPMIS5tfUOecqePdv2nLuztb2gNJnTghuk3vw7A0QHMy20WV35HsMM3eaOzp1xxjPy_E&usqp=CAU)
+![ChatGPT Logo](https://cdn-icons-png.flaticon.com/256/12222/12222588.png)
+![Discord Logo](https://cdn.iconscout.com/icon/free/png-256/free-discord-4054115-3353190.png)
