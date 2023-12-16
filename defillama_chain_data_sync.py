@@ -20,11 +20,11 @@ def init_db():
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS chain_data (
+            name TEXT PRIMARY KEY,
             gecko_id TEXT,
             tvl REAL,
             tokenSymbol TEXT,
             cmcId INTEGER,
-            name TEXT,
             chainId INTEGER,
             timestamp DATETIME
         )
@@ -38,32 +38,25 @@ def insert_data(conn, data):
     print("Inserting data into the database...")
     cursor = conn.cursor()
     for item in data:
-        # Skip if chainId or gecko_id is null
-        if item['chainId'] is None or item['gecko_id'] is None:
-            print(f"Skipping entry with null chainId or gecko_id: {item}")
-            continue
-
-        # Check if the entry already exists
-        cursor.execute('SELECT * FROM chain_data WHERE gecko_id = ? AND timestamp = ?', (item['gecko_id'], datetime.now().date(),))
-        if not cursor.fetchone():
-            cursor.execute('''
-                INSERT INTO chain_data (gecko_id, tvl, tokenSymbol, cmcId, name, chainId, timestamp)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (item['gecko_id'], item['tvl'], item['tokenSymbol'], item['cmcId'], item['name'], item['chainId'], datetime.now(),))
-            print(f"Inserted data for {item['gecko_id']}.")
+        # Insert data with 'name' as the first column
+        cursor.execute('''
+            INSERT OR IGNORE INTO chain_data (name, gecko_id, tvl, tokenSymbol, cmcId, chainId, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (item.get('name'), item.get('gecko_id'), item.get('tvl'), item.get('tokenSymbol'), item.get('cmcId'), item.get('chainId'), datetime.now(),))
     conn.commit()
     print("Data insertion complete.")
 
-#def main():
-#    try:
-#        data = fetch_data()
-#        conn = init_db()
-#        insert_data(conn, data)
-#        print("Data inserted successfully.")
-#    except Exception as e:
-#        print(f"An error occurred: {e}")
-#    finally:
-#        if conn:
-#            conn.close()
-#if __name__ == "__main__":
-#    main()
+def main():
+    try:
+        data = fetch_data()
+        conn = init_db()
+        insert_data(conn, data)
+        print("Data inserted successfully.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        if conn:
+            conn.close()
+
+if __name__ == "__main__":
+    main()
