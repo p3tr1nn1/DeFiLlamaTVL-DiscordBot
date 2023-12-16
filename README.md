@@ -68,4 +68,4 @@ Feel free to customize and expand upon this documentation as needed for your pro
 
 ![DeFi Llama Logo](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXPMIS5tfUOecqePdv2nLuztb2gNJnTghuk3vw7A0QHMy20WV35HsMM3eaOzp1xxjPy_E&usqp=CAU)
 ![ChatGPT Logo](https://cdn-icons-png.flaticon.com/256/12222/12222588.png)
-![Discord Logo](https://cdn.iconscout.com/icon/free/png-256/free-discord-4054115-3353190.png)
+![Discord Logo](https://cdn.iconscout.com/icon/free/png-256/free-discord-4408564-3649907.png?f=webp)
