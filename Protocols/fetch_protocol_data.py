@@ -41,7 +41,9 @@ def create_protocol_table(conn):
             change_1d REAL,
             change_7d REAL,
             tvl REAL,
-            mcap REAL
+            mcap REAL,
+            category TEXT,
+            methodology TEXT
         )
     ''')
     conn.commit()
@@ -50,17 +52,27 @@ def create_protocol_table(conn):
 # Insert protocol data into the database, overwriting duplicates
 def insert_protocol_data(conn, protocol_data):
     cursor = conn.cursor()
+    cursor.execute("DELETE FROM protocols")
+    conn.commit()
     for protocol in protocol_data:
+        if protocol['category'] == 'CEX':
+            print(f"Skipping data for protocol: {protocol['name']} (ID: {protocol['id']}) as category is CEX.")
+            continue
+
+        # Check if 'methodology' key exists in protocol data
+        methodology = protocol.get('methodology', 'N/A')
+
         cursor.execute('''
             INSERT OR REPLACE INTO protocols (
                 date, id, name, symbol, url, description, chain, logo, chains,
-                change_1h, change_1d, change_7d, tvl, mcap
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                change_1h, change_1d, change_7d, tvl, mcap, category, methodology
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             datetime.now().strftime('%Y-%m-%d %H:%M:%S'), protocol['id'], protocol['name'],
             protocol['symbol'], protocol['url'], protocol['description'], protocol['chain'],
             protocol['logo'], ', '.join(protocol['chains']), protocol['change_1h'],
-            protocol['change_1d'], protocol['change_7d'], protocol['tvl'], protocol['mcap']
+            protocol['change_1d'], protocol['change_7d'], protocol['tvl'], protocol['mcap'],
+            protocol['category'], methodology  # Use the 'methodology' value or 'N/A' if missing
         ))
         conn.commit()
         print(f"Inserted/Updated data for protocol: {protocol['name']} (ID: {protocol['id']})")

@@ -16,6 +16,7 @@ def query_all_tvl_and_name(conn):
 def calculate_average_tvl(data):
     total_tvl = sum(entry[1] for entry in data)
     num_entries = len(data)
+    print(total_tvl/num_entries)
     return total_tvl / num_entries if num_entries > 0 else 0
 
 # Create a new table for protocols with TVL >= 70% of the average TVL
