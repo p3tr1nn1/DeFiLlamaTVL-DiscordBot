@@ -8,6 +8,8 @@ __pycache__/
 
 # Local databases
 *.db
+# JSON outputs
+*.json
 
 # Distribution / packaging
 .Python
