@@ -1,7 +1,7 @@
+import json
 import requests
 import sqlite3
 from datetime import datetime, timedelta
-import json
 
 # Query the defillama_data.db database for chains with TVL higher than 5 million
 def query_high_tvl_chains():
@@ -37,7 +37,7 @@ def analyze_tvl(chain_name):
         return None  # Not enough data
 
     current_tvl = data[0][1]
-    formatted_current_tvl = "{:,}".format(current_tvl)  # Format TVL with commas
+    formatted_current_tvl = "{:,.2f}".format(current_tvl)  # Format TVL with commas and two decimal places
     tvl_30_days_ago = data[30][1]
     increase_30d = calculate_percentage_increase(current_tvl, tvl_30_days_ago)
 
@@ -58,16 +58,12 @@ def main():
         if result:
             analysis_results.append(result)
 
-    # Sort the results by current TVL in descending order
-    sorted_results = sorted(analysis_results, key=lambda x: x['current_tvl'], reverse=True)
+    # Sort the results by TVL in descending order
+    analysis_results.sort(key=lambda x: float(x["current_tvl"].replace(",", "")), reverse=True)
 
-    # Write sorted analysis results to a JSON file
+    # Write analysis results to a JSON file
     with open('tvl_analysis_results.json', 'w') as file:
-        json.dump(sorted_results, file, indent=4)
-
-    # Print messages in a formatted manner
-    for result in sorted_results:
-        print(result["message"])
+        json.dump(analysis_results, file, indent=4)
 
 if __name__ == "__main__":
     main()
