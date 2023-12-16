@@ -14,8 +14,8 @@ def query_high_tvl_chains():
     cursor.execute("SELECT DISTINCT name FROM chain_data WHERE tvl > 5000000")
     chains = cursor.fetchall()
     conn.close()
-    # Use only the part before the hyphen and exclude None values
-    return [chain[0].split('-')[0] for chain in chains if chain[0]]
+    # Use only the first word of the name and exclude None values
+    return [chain[0].split()[0] for chain in chains if chain[0]]
 
 # Fetch historical TVL data for a chain
 def fetch_historical_tvl(chain_name):
