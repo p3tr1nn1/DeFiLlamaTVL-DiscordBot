@@ -37,6 +37,7 @@ def analyze_tvl(chain_name):
         return None  # Not enough data
 
     current_tvl = data[0][1]
+    formatted_current_tvl = "{:,}".format(current_tvl)  # Format TVL with commas
     tvl_30_days_ago = data[30][1]
     increase_30d = calculate_percentage_increase(current_tvl, tvl_30_days_ago)
 
@@ -46,7 +47,7 @@ def analyze_tvl(chain_name):
         increase_1d = calculate_percentage_increase(current_tvl, tvl_1_day_ago)
         increase_7d = calculate_percentage_increase(current_tvl, tvl_7_days_ago)
         message = f"{chain_name} TVL increased by {increase_30d:.2f}% over the last 30 days, {increase_7d:.2f}% over the last 7 days, and {increase_1d:.2f}% over the last day."
-        return {"chain": chain_name, "message": message, "current_tvl": current_tvl}
+        return {"chain": chain_name, "message": message, "current_tvl": formatted_current_tvl}
 
 def main():
     chains = query_high_tvl_chains()
