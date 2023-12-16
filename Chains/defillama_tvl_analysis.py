@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 def query_high_tvl_chains():
     conn = sqlite3.connect('defillama_data.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT DISTINCT name FROM chain_data WHERE tvl > 5000000")
+    cursor.execute("SELECT DISTINCT name FROM chain_data WHERE tvl > 10000000")
     chains = cursor.fetchall()
     conn.close()
     return [chain[0] for chain in chains]
@@ -18,7 +18,6 @@ def calculate_percentage_increase(current_tvl, previous_tvl):
 
 # Fetch historical TVL data and calculate differences
 def analyze_tvl(chain_name):
-    # Sanitize the chain_name to create a valid SQL table name
     sanitized_chain_name = chain_name.replace(" ", "_").replace("-", "_")
     historical_conn = sqlite3.connect('defillama_historical.db')
     cursor = historical_conn.cursor()
@@ -37,17 +36,16 @@ def analyze_tvl(chain_name):
         return None  # Not enough data
 
     current_tvl = data[0][1]
-    formatted_current_tvl = "{:,.2f}".format(current_tvl)  # Format TVL with commas and two decimal places
+    formatted_current_tvl = "{:,.2f}".format(current_tvl)
     tvl_30_days_ago = data[30][1]
     increase_30d = calculate_percentage_increase(current_tvl, tvl_30_days_ago)
 
-    if increase_30d > 20:
-        tvl_1_day_ago = data[1][1]
-        tvl_7_days_ago = data[7][1]
-        increase_1d = calculate_percentage_increase(current_tvl, tvl_1_day_ago)
-        increase_7d = calculate_percentage_increase(current_tvl, tvl_7_days_ago)
-        message = f"{chain_name} TVL increased by {increase_30d:.2f}% over the last 30 days, {increase_7d:.2f}% over the last 7 days, and {increase_1d:.2f}% over the last day."
-        return {"chain": chain_name, "message": message, "current_tvl": formatted_current_tvl}
+    # Ensure all returned dictionaries have the same structure
+    return {
+        "chain": chain_name,
+        "current_tvl": formatted_current_tvl,
+        "increase_30d": increase_30d
+    }
 
 def main():
     chains = query_high_tvl_chains()
@@ -58,8 +56,8 @@ def main():
         if result:
             analysis_results.append(result)
 
-    # Sort the results by TVL in descending order
-    analysis_results.sort(key=lambda x: float(x["current_tvl"].replace(",", "")), reverse=True)
+    # Sort the results by 30-day percentage change in descending order
+    analysis_results.sort(key=lambda x: x.get("increase_30d", 0), reverse=True)
 
     # Write analysis results to a JSON file
     with open('tvl_analysis_results.json', 'w') as file:
