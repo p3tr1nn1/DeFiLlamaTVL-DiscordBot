@@ -18,7 +18,7 @@ def calculate_percentage_increase(current_tvl, previous_tvl):
 
 # Fetch historical TVL data and calculate differences
 def analyze_tvl(chain_name):
-    # Sanitize the chain_name to match the table naming convention
+    # Sanitize the chain_name to create a valid SQL table name
     sanitized_chain_name = chain_name.replace(" ", "_").replace("-", "_")
     historical_conn = sqlite3.connect('defillama_historical.db')
     cursor = historical_conn.cursor()
@@ -27,9 +27,11 @@ def analyze_tvl(chain_name):
         cursor.execute(f"SELECT date, tvl FROM '{sanitized_chain_name}' ORDER BY date DESC LIMIT 31")
         data = cursor.fetchall()
     except sqlite3.OperationalError as e:
-        print(f"SQL error for chain {chain_name}: {e}")
+        print(f"SQL error for chain {chain_name} (sanitized as {sanitized_chain_name}): {e}")
         historical_conn.close()
         return None
+
+    historical_conn.close()
 
     if len(data) < 31:
         return None  # Not enough data
@@ -43,24 +45,28 @@ def analyze_tvl(chain_name):
         tvl_7_days_ago = data[7][1]
         increase_1d = calculate_percentage_increase(current_tvl, tvl_1_day_ago)
         increase_7d = calculate_percentage_increase(current_tvl, tvl_7_days_ago)
-        return f"{chain_name} TVL increased by {increase_30d:.2f}% over the last 30 days, {increase_7d:.2f}% over the last 7 days, and {increase_1d:.2f}% over the last day."
+        message = f"{chain_name} TVL increased by {increase_30d:.2f}% over the last 30 days, {increase_7d:.2f}% over the last 7 days, and {increase_1d:.2f}% over the last day."
+        return {"chain": chain_name, "message": message, "current_tvl": current_tvl}
 
 def main():
     chains = query_high_tvl_chains()
-    messages = []
+    analysis_results = []
 
     for chain in chains:
-        message = analyze_tvl(chain)
-        if message:
-            messages.append(message)
+        result = analyze_tvl(chain)
+        if result:
+            analysis_results.append(result)
 
-    # Write messages to a JSON file
-    with open('tvl_analysis_messages.json', 'w') as file:
-        json.dump(messages, file, indent=4)
+    # Sort the results by current TVL in descending order
+    sorted_results = sorted(analysis_results, key=lambda x: x['current_tvl'], reverse=True)
+
+    # Write sorted analysis results to a JSON file
+    with open('tvl_analysis_results.json', 'w') as file:
+        json.dump(sorted_results, file, indent=4)
 
     # Print messages in a formatted manner
-    for message in messages:
-        print(message)
+    for result in sorted_results:
+        print(result["message"])
 
 if __name__ == "__main__":
     main()
