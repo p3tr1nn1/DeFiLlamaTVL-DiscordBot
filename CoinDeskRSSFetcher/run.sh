@@ -1,4 +1,0 @@
-python3 coindesk_rss_fetcher.py
-python3 rss_discord_publisher.py
-python3 investing_rss_fetcher.py
-python3 rss_investing_publisher.py

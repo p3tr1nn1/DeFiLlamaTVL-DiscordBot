@@ -5,11 +5,11 @@ DATABASE_PATH = 'central_rss_articles.db'
 HTML_OUTPUT_PATH = 'crypto_news.html'
 
 def fetch_data():
-    """Fetches data from the discord_queue table."""
+    """Fetches data from the articles table."""
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
-    # Fetch data sorted by publication_date in descending order
-    cursor.execute('SELECT title, link, description, publication_date, content_url FROM discord_queue ORDER BY publication_date DESC')
+    # Fetch the last 100 data sorted by publication_date in descending order from articles table
+    cursor.execute('SELECT title, link, description, publication_date, content_url FROM articles ORDER BY publication_date DESC LIMIT 100')
     data = cursor.fetchall()
     conn.close()
     return data
