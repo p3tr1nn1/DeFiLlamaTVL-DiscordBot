@@ -1,3 +1,19 @@
+import sqlite3
+import os
+
+DATABASE_PATH = 'central_rss_articles.db'
+HTML_OUTPUT_PATH = 'crypto_news.html'
+
+def fetch_data():
+    """Fetches data from the discord_queue table."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    # Fetch data sorted by publication_date in descending order
+    cursor.execute('SELECT title, link, description, publication_date, content_url FROM discord_queue ORDER BY publication_date DESC')
+    data = cursor.fetchall()
+    conn.close()
+    return data
+
 def generate_html(data):
     """Generates an HTML page from the data."""
     html_content = '''
@@ -26,20 +42,9 @@ def generate_html(data):
             .article-title { 
                 font-size: 20px; 
                 font-weight: bold; 
-                margin: 0 0 10px 0; 
+                margin: 0; 
             }
-            .article-description { 
-                font-size: 14px; 
-                color: #c0c0c0; 
-                margin-bottom: 10px; 
-            }
-            .publication-date {
-                font-size: 12px; 
-                color: #a0a0a0; 
-                margin-top: 10px; 
-                border-top: 1px solid #333; 
-                padding-top: 10px; 
-            }
+            .article-description { margin-top: 5px; }
             .article-title a { 
                 text-decoration: none; 
                 color: #4f9d69; 
@@ -59,7 +64,7 @@ def generate_html(data):
                 <div class="article-title"><a href="{link}">{title}</a></div>
                 <img src="{content_url}" class="article-image" alt="{title}">
                 <div class="article-description">{description}</div>
-                <div class="publication-date">Published on: {pub_date}</div>
+                <div>Published on: {pub_date}</div>
             </div>
         '''
 
@@ -70,3 +75,10 @@ def generate_html(data):
 
     with open(HTML_OUTPUT_PATH, 'w') as file:
         file.write(html_content)
+
+def main():
+    data = fetch_data()
+    generate_html(data)
+
+if __name__ == '__main__':
+    main()
