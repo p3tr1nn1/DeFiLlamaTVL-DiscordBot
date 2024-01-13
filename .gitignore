@@ -10,6 +10,7 @@ __pycache__/
 *.db
 # JSON outputs
 *.json
+*.html
 
 # Distribution / packaging
 .Python
