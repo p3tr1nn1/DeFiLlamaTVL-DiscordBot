@@ -2,6 +2,13 @@
 
 This repository contains a collection of Python scripts for analyzing and monitoring the Total Value Locked (TVL) of various decentralized finance (DeFi) chains using the DeFi Llama API. The scripts provide insights into TVL changes over different time periods and can send notifications to a Discord channel.
 
+## Features
+
+- **Data Fetching**: Retrieve blockchain TVL data from the DeFiLlama API.
+- **Data Storage**: Store and manage data in an SQLite database.
+- **Data Analysis**: Analyze TVL data to identify significant trends.
+- **Discord Integration**: Report analysis results on Discord using rich embeds.
+
 ## Installation
 
 Before using the scripts, ensure you have Python 3 and pip3 installed. If not, you can install them as follows:
@@ -11,6 +18,13 @@ sudo apt-get update
 sudo apt-get install python3
 sudo apt-get install python3-pip
 ```
+
+2. **Install Required Libraries**:
+   You need Python 3.x installed. Then, install the required libraries using:
+   ```
+   pip install requests sqlite3 json
+   ```
+
 
 ## Usage
 To run the analysis and monitoring scripts, follow these steps:
