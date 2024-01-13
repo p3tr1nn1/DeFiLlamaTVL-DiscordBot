@@ -48,7 +48,7 @@
 
 Run the main script:
 ```bash
-python main.py
+python3 main.py
 ```
 
 ## 📜 License
