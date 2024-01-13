@@ -49,6 +49,7 @@ def fetch_and_store_coindesk_rss_feed(url):
         pub_date = format_pub_date(entry.published)
         content_url = entry.get('media_content', [{}])[0].get('url', 'No Image')
 
+        # Insert new record, ignore if the link already exists
         cursor.execute('''
             INSERT OR IGNORE INTO articles (title, link, description, publication_date, content_url, sent_to_discord)
             VALUES (?, ?, ?, ?, ?, ?)
@@ -83,14 +84,9 @@ def fetch_and_store_defiant_rss_feed():
         pub_date = format_defiant_pub_date(entry.get('published', 'Unknown'))
         thumbnail_url = entry.get('media_thumbnail', [{}])[0].get('url', 'No Image')
 
-        # Check if entry already exists in the articles table
-        cursor.execute('SELECT link FROM articles WHERE link = ?', (link,))
-        if cursor.fetchone():
-            continue  # Skip if entry already exists
-
-        # Insert into the articles table
+        # Insert new record, ignore if the link already exists
         cursor.execute('''
-            INSERT INTO articles (title, link, description, publication_date, content_url, sent_to_discord)
+            INSERT OR IGNORE INTO articles (title, link, description, publication_date, content_url, sent_to_discord)
             VALUES (?, ?, ?, ?, ?, ?)
         ''', (title, link, description, pub_date, thumbnail_url, False))
 
@@ -106,18 +102,18 @@ def fetch_and_store_investing_rss_feed():
     for entry in feed.entries:
         title = entry.title
         link = entry.link
-        # Corrected column name from 'pub_date' to 'publication_date'
         publication_date = datetime.strptime(entry.published, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
         content_url = entry.enclosures[0].href if entry.enclosures else 'No Image'
 
-        # Corrected INSERT statement to use 'publication_date'
+        # Insert new record, ignore if the link already exists
         cursor.execute('''
-            INSERT INTO articles (title, link, description, publication_date, content_url, sent_to_discord)
+            INSERT OR IGNORE INTO articles (title, link, description, publication_date, content_url, sent_to_discord)
             VALUES (?, ?, ?, ?, ?, ?)
         ''', (title, link, '', publication_date, content_url, False))
 
     conn.commit()
     conn.close()
+
 
 
 
