@@ -3,15 +3,15 @@ import feedparser
 from datetime import datetime
 from email.utils import parsedate_to_datetime
 
-# Database path
-DATABASE_PATH = 'defiant_articles.db'  # Update this path as needed
+# Central database for all scripts
+DATABASE_PATH = 'central_rss_articles.db'
 
-# Database setup
+# Database setup for Defiant articles
 def setup_database():
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS articles (
+        CREATE TABLE IF NOT EXISTS defiant_articles (
             title TEXT,
             link TEXT PRIMARY KEY,
             description TEXT,
@@ -31,7 +31,7 @@ def format_pub_date(pub_date_str):
     except Exception:
         return 'Unknown'  # Return 'Unknown' if parsing fails
 
-# Parse RSS Feed
+# Parse RSS Feed and store in the Defiant table
 def fetch_rss_feed(url):
     feed = feedparser.parse(url)
     conn = sqlite3.connect(DATABASE_PATH)
@@ -44,14 +44,14 @@ def fetch_rss_feed(url):
         pub_date = format_pub_date(entry.get('published', 'Unknown'))
         thumbnail_url = entry.get('media_thumbnail', [{}])[0].get('url', 'Unknown')
 
-        # Check if entry already exists
-        cursor.execute('SELECT link FROM articles WHERE link = ?', (link,))
+        # Check if entry already exists in the defiant_articles table
+        cursor.execute('SELECT link FROM defiant_articles WHERE link = ?', (link,))
         if cursor.fetchone():
             continue  # Skip if entry already exists
 
-        # Insert into the database
+        # Insert into the defiant_articles table
         cursor.execute('''
-            INSERT INTO articles (title, link, description, publication_date, thumbnail_url, sent_to_discord)
+            INSERT INTO defiant_articles (title, link, description, publication_date, thumbnail_url, sent_to_discord)
             VALUES (?, ?, ?, ?, ?, ?)
         ''', (title, link, description, pub_date, thumbnail_url, False))
 
