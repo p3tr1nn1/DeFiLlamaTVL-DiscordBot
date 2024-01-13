@@ -4,6 +4,7 @@ import requests
 import json
 import time
 from datetime import datetime
+from email.utils import parsedate_to_datetime  # for parsing RFC 2822 dates
 
 # Database path
 DATABASE_PATH = 'rss_articles.db'  # Update this path as needed
@@ -16,9 +17,9 @@ BATCH_DELAY_SECONDS = 5
 def format_pub_date(pub_date_str):
     """Formats the publication date to a more readable format."""
     try:
-        pub_date = datetime.strptime(pub_date_str, '%a, %d %b %Y %H:%M:%S %z')
+        pub_date = parsedate_to_datetime(pub_date_str)
         return pub_date.strftime('%B %d, %Y')
-    except ValueError:
+    except Exception:
         return pub_date_str  # Return the original string if parsing fails
 
 def create_news_embed(title, link, description, category, content_url, pub_date):
@@ -43,13 +44,15 @@ def send_discord_message(embeds):
     return response.status_code == 200
 
 def fetch_unsent_articles_and_notify():
-    """Fetch unsent articles, send to Discord, and update the database."""
+    """Fetch unsent articles, sort by publication date, send to Discord, and update the database."""
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
 
-    # Fetch articles ordered by publication date (oldest first)
-    cursor.execute('SELECT title, link, description, category, content_url, publication_date FROM articles WHERE sent_to_discord = 0 ORDER BY publication_date ASC')
+    cursor.execute('SELECT title, link, description, category, content_url, publication_date FROM articles WHERE sent_to_discord = 0')
     unsent_articles = cursor.fetchall()
+
+    # Sort articles by publication date
+    unsent_articles.sort(key=lambda x: parsedate_to_datetime(x[5]))
 
     for index, (title, link, description, category, content_url, pub_date) in enumerate(unsent_articles, start=1):
         embed = create_news_embed(title, link, description, category, content_url, pub_date)
