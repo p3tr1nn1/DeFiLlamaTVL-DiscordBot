@@ -1,65 +1,84 @@
-import os
-import sqlite3
 import requests
+import json
 import time
-from email.utils import parsedate_to_datetime
+import os
+import random
 
-# Update with your database path
-DATABASE_PATH = 'central_rss_articles.db'
+# Environment variable for Discord webhook
 DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
+JSON_INPUT_PATH = 'unsent_to_discord.json'
 MESSAGE_BATCH_SIZE = 10
 BATCH_DELAY_SECONDS = 5
 
-def format_pub_date(pub_date_str):
-    try:
-        pub_date = parsedate_to_datetime(pub_date_str)
-        return pub_date.strftime('%B %d, %Y')
-    except Exception:
-        return pub_date_str
+RETRY_DELAY_SECONDS = 5
+MAX_RETRIES = 3  # Maximum number of retries for a failed message
 
-def create_news_embed(title, link, description, content_url, pub_date):
-    formatted_date = format_pub_date(pub_date)
+def create_news_embed(article):
+    """Creates a Discord embed for a news item with a random color."""
     embed = {
-        "title": title,
-        "description": f"{description}\n\nPublished on: {formatted_date}\n[Read more...]({link})",
-        "color": 5814783
+        "title": article['title'],
+        "description": f"{article['description']}\n\nPublished on: {article['publication_date']}\n[Read more...]({article['link']})",
+        "color": random.randint(0, 0xFFFFFF)  # Random color
     }
-    if content_url:
-        embed["image"] = {"url": content_url}
+    if article.get('content_url') and article['content_url'] != "No Image":
+        embed["image"] = {"url": article['content_url']}
     return embed
 
 def send_discord_message(embeds):
+    """Sends a message to the Discord channel via webhook with error handling and retry mechanism."""
     data = {"embeds": embeds}
-    response = requests.post(DISCORD_WEBHOOK_URL, json=data)
-    return response.status_code == 200
+    attempts = 0
 
-def fetch_unsent_articles_and_notify():
-    conn = sqlite3.connect(DATABASE_PATH)
-    cursor = conn.cursor()
+    while attempts < MAX_RETRIES:
+        try:
+            response = requests.post(DISCORD_WEBHOOK_URL, json=data)
+            response.raise_for_status()
+            return True
+        except requests.exceptions.HTTPError as http_err:
+            print(f"HTTP error occurred: {http_err} - Attempt {attempts + 1} of {MAX_RETRIES}")
+        except requests.exceptions.ConnectionError as conn_err:
+            print(f"Connection error occurred: {conn_err} - Attempt {attempts + 1} of {MAX_RETRIES}")
+        except requests.exceptions.Timeout as timeout_err:
+            print(f"Timeout error occurred: {timeout_err} - Attempt {attempts + 1} of {MAX_RETRIES}")
+        except requests.exceptions.RequestException as req_err:
+            print(f"Error sending request: {req_err} - Attempt {attempts + 1} of {MAX_RETRIES}")
 
-    cursor.execute('SELECT title, link, description, content_url, publication_date FROM discord_queue ORDER BY publication_date')
-    unsent_articles = cursor.fetchall()
+        attempts += 1
+        if attempts < MAX_RETRIES:
+            time.sleep(RETRY_DELAY_SECONDS)
 
-    for index, (title, link, description, content_url, pub_date) in enumerate(unsent_articles, start=1):
-        embed = create_news_embed(title, link, description, content_url, pub_date)
+    return False
+
+def send_messages_from_json():
+    """Sends messages to Discord from JSON file."""
+    try:
+        with open(JSON_INPUT_PATH, 'r') as file:
+            articles = json.load(file)
+    except FileNotFoundError:
+        print(f"File not found: {JSON_INPUT_PATH}")
+        return
+
+    for index, article in enumerate(articles, start=1):
+        embed = create_news_embed(article)
         if send_discord_message([embed]):
-            cursor.execute('DELETE FROM discord_queue WHERE link = ?', (link,))
-            conn.commit()
-            print(f"Sent article: {title}")
+            print(f"Sent article: {article['title']}")
         else:
-            print(f"Failed to send article: {title}")
+            print(f"Failed to send article: {article['title']}")
 
         if index % MESSAGE_BATCH_SIZE == 0:
             time.sleep(BATCH_DELAY_SECONDS)
-
-    conn.close()
+def clear_json_file():
+    """Clears the contents of the JSON file."""
+    with open(JSON_INPUT_PATH, 'w') as file:
+        json.dump([], file)  # Write an empty list to the file
 
 def main():
     if not DISCORD_WEBHOOK_URL:
         print("Discord webhook URL is not set. Please set the DISCORD_WEBHOOK_URL environment variable.")
         return
 
-    fetch_unsent_articles_and_notify()
+    send_messages_from_json()
+    clear_json_file()
 
 if __name__ == '__main__':
     main()
