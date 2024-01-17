@@ -3,9 +3,12 @@ import requests
 import sqlite3
 from datetime import datetime, timedelta
 
+DB_FILE = 'defillama_data.db'
+JSON_FILE = 'tvl_analysis_results.json'
+
 # Query the defillama_data.db database for chains with TVL higher than 5 million
 def query_high_tvl_chains():
-    conn = sqlite3.connect('defillama_data.db')
+    conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     cursor.execute("SELECT DISTINCT name FROM chain_data WHERE tvl > 10000000")
     chains = cursor.fetchall()
@@ -19,7 +22,7 @@ def calculate_percentage_increase(current_tvl, previous_tvl):
 # Fetch historical TVL data and calculate differences
 def analyze_tvl(chain_name):
     sanitized_chain_name = chain_name.replace(" ", "_").replace("-", "_")
-    historical_conn = sqlite3.connect('defillama_historical.db')
+    historical_conn = sqlite3.connect(DB_FILE)
     cursor = historical_conn.cursor()
 
     try:
@@ -60,7 +63,7 @@ def main():
     analysis_results.sort(key=lambda x: x.get("increase_30d", 0), reverse=True)
 
     # Write analysis results to a JSON file
-    with open('tvl_analysis_results.json', 'w') as file:
+    with open(JSON_FILE, 'w') as file:
         json.dump(analysis_results, file, indent=4)
 
 if __name__ == "__main__":

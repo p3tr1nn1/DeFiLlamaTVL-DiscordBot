@@ -1,17 +1,19 @@
 import requests
 import sqlite3
+import json
 from datetime import datetime
 
+DB_FILE = 'defillama_data.db'
 # Initialize and connect to SQLite database for historical data
 def init_historical_db():
-    conn = sqlite3.connect('defillama_historical.db')
+    conn = sqlite3.connect(DB_FILE)
     return conn
 
-# Query the defillama_data.db database for chains with TVL higher than 5 million
+# Query the defillama_data.db database for chains with TVL higher than 50K
 def query_high_tvl_chains():
-    conn = sqlite3.connect('defillama_data.db')
+    conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    cursor.execute("SELECT DISTINCT name FROM chain_data WHERE tvl > 5000000")
+    cursor.execute("SELECT DISTINCT name FROM chain_data WHERE tvl > 50000")
     chains = cursor.fetchall()
     conn.close()
     # Use only the first word of the name and exclude None values

@@ -2,6 +2,8 @@ import requests
 import sqlite3
 from datetime import datetime
 
+DB_FILE = 'defillama_data.db'
+
 # Fetch data from DeFiLlama API
 def fetch_data():
     print("Fetching data from DeFiLlama API...")
@@ -16,7 +18,7 @@ def fetch_data():
 # Initialize and connect to SQLite database
 def init_db():
     print("Initializing database...")
-    conn = sqlite3.connect('defillama_data.db')
+    conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS chain_data (

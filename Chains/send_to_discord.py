@@ -2,6 +2,8 @@ import json
 import requests
 import os
 
+JSON_FILE = 'tvl_analysis_results.json'
+
 def read_json_file(file_path):
     with open(file_path, 'r') as file:
         return json.load(file)
@@ -36,7 +38,7 @@ def main():
         print("Discord webhook URL not found in environment variables.")
         return
 
-    analysis_results = read_json_file('tvl_analysis_results.json')
+    analysis_results = read_json_file(JSON_FILE)
     
     # Get the first 10 analysis results
     first_10_results = analysis_results[:10]
